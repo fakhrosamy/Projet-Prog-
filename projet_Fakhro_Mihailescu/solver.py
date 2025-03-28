@@ -189,3 +189,5 @@ class SolverFulkerson(Solver):
         total_unpaired = sum(1 for i in range(self.grid.n) for j in range(self.grid.m)
                              if (i, j) not in used_cells and not self.grid.is_forbidden(i, j))
         return total_unpaired
+
+lirili larila
