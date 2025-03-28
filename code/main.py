@@ -4,7 +4,7 @@ from solver import *
 grid1 = Grid(2, 3)
 print(grid1)
 
-data_path = "../input/"
+data_path = "input/"
 
 file_name = data_path + "grid01.in"
 grid2 = Grid.grid_from_file(file_name)
