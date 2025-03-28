@@ -190,4 +190,3 @@ class SolverFulkerson(Solver):
                              if (i, j) not in used_cells and not self.grid.is_forbidden(i, j))
         return total_unpaired
 
-lirili larila
