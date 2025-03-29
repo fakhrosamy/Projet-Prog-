@@ -20,6 +20,10 @@ print("The final score of SolverEmpty is:", solver.score())
 
 Grid.plot(grid2)
 
-solver = SolverFulkerson(grid2)
-solver.Ford_Fulkerson()
+file_name = data_path + "grid13.in"
+grid3 = Grid.grid_from_file(file_name)
+print(grid3)
+
+solver = SolverFulkerson(grid3)
+solver.run()
 print("The final score of SolverFulkerson is:", solver.score())

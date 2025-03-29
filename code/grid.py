@@ -118,8 +118,18 @@ class Grid():
     
         return abs(self.value[i1][j1] - self.value[i2][j2])
 
-
-
+    def match_colors(self,i1,j1,i2,j2):
+        """Return True is the colors match and False otherwise"""
+        if self.is_forbidden(i1,j1) or self.is_forbidden(i2,j2):
+            return False
+        elif self.color[i1][j1]==0 or self.color[i2][j2]==0:
+            return True
+        elif self.color[i1][j1]<3 and self.color[i2][j2]<3:
+            return True
+        elif self.color[i1][j1]==3 and self.color[i2][j2]==3:
+            return True
+        else:
+            return False
     def all_pairs(self):
         """
         Returns a list of all pairs of cells that can be taken together. 
@@ -127,122 +137,16 @@ class Grid():
         Outputs a list of tuples of tuples [(c1, c2), (c1', c2'), ...] where each cell c1 etc. is itself a tuple (i, j)
         """
         L=[]
-
-        for i in range (self.n):
-
-            for j in range (self.m):
-
-                if self.color[i][j]==0: #on associe les blanches à toutes les autres cases sauf les noires
-
-                    if i>0:
-
-                        if self.is_forbidden(i-1,j)==False:
-
-                            L.append(((i,j),(i-1,j)))
-
-                    if i<self.n-1:
-
-                        if self.is_forbidden(i+1,j)==False:
-
-                            L.append(((i,j),(i+1,j)))
-
-                    if j>0 : 
-
-                        if self.is_forbidden(i,j-1)==False:
-
-                            L.append(((i,j),(i,j-1)))
-
-                    if j<self.n-1:
-
-                        if self.is_forbidden(i,j+1)==False:
-
-                            L.append(((i,j),(i,j+1)))
-
-
-
-                elif self.color[i][j]==1: #on associe les rouges aux rouges et aux bleues
-
-                    if i>0:
-
-                        if self.color[i-1][j]==1 or self.color[i-1][j]==2:
-
-                            L.append(((i,j),(i-1,j)))
-
-                    if i<self.n-1:
-
-                        if self.color[i+1][j]==1 or self.color[i+1][j]==2:
-
-                            L.append(((i,j),(i+1,j)))
-
-                    if j > 0 : 
-
-                        if self.color[i][j-1]==1 or self.color[i][j-1]==2:
-
-                            L.append(((i,j),(i,j-1)))
-
-                    if j<self.n-1:
-
-                        if self.color[i][j+1]==1 or self.color[i][j+1]==2:
-
-                            L.append(((i,j),(i,j+1)))
-
-                elif self.color[i][j]==2: #on associe les bleues aux bleues
-
-                    if i>0:
-
-                        if self.color[i-1][j]==2:
-
-                            L.append(((i,j),(i-1,j)))
-
-                    if i<self.n-1:
-
-                        if self.color[i+1][j]==2:
-
-                            L.append(((i,j),(i+1,j)))
-
-                    if j>0 : 
-
-                        if self.color[i][j-1]==2:
-
-                            L.append(((i,j),(i,j-1)))
-
-                    if j<self.n-1:
-
-                        if self.color[i][j+1]==2:
-
-                            L.append(((i,j),(i,j+1)))
-
-                elif self.color[i][j]==3: #on associe les vertes aux vertes
-
-                    if i>0:
-
-                        if self.color[i-1][j]==3:
-
-                            L.append(((i,j),(i-1,j)))
-
-                    if i<self.n-1:
-
-                        if self.color[i+1][j]==3:
-
-                            L.append(((i,j),(i+1,j)))
-
-                    if j>0 : 
-
-                        if self.color[i][j-1]==3:
-
-                            L.append(((i,j),(i,j-1)))
-
-                    if j<self.n-1:
-
-                        if self.color[i][j+1]==3:
-
-                            L.append(((i,j),(i,j+1)))
-
-        return L  
-
+        n,m= self.n, self.m
+        for i in range(n):
+            for j in range(m):
+                if i+1<n and self.match_colors(i,j,i+1,j):
+                    L.append(((i,j),(i+1,j)))
+                if j+1<m and self.match_colors(i,j,i,j+1):
+                    L.append(((i,j),(i,j+1)))
+        return L
     
-
-
+    
 
     @classmethod
     def grid_from_file(cls, file_name, read_values=False): 
