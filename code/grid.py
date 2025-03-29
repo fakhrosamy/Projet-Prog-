@@ -174,7 +174,7 @@ class Grid():
 
                             L.append(((i,j),(i+1,j)))
 
-                    if j>0 : 
+                    if j > 0 : 
 
                         if self.color[i][j-1]==1 or self.color[i][j-1]==2:
 

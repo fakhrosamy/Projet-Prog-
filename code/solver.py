@@ -62,131 +62,154 @@ class SolverEmpty(Solver):
         
         return total_score
 
+
+class Graph () :
+
+    def __init__(self,listVertices):
+
+        
+
+
+
+    def create_oriented(self):
+        """Créer un graphe orienté pour utiliser la méthode des flots
+        
+        dico_capacite: contient la capacité des arètes
+        dico_graphe: similaire à une liste d'adjacence
+        
+        (-1,-1) est le sommet source du graphe biparti
+        (-2,-2) est le sommet puit du graphe biparti"""
+        l=self.all_pairs()
+        dico_capacite={}
+        dico_graphe={}
+        dico_graphe[(-1,-1)]=[]
+        for k in range(len(l)):
+            if sum(l[k][0])%2==0:
+                t1=l[k][0]
+                t2=l[k][1]
+            else:
+                t2=l[k][0]
+                t1=l[k][1]
+
+            dico_capacite[(t1,t2)]=1
+            dico_capacite[((t2,t1))]=0
+            dico_capacite[((t2,(-2,-2)))]=1
+            dico_capacite[(((-1,-1),t1))]=1
+
+            if t1 not in dico_graphe:
+                dico_graphe[t1]=[t2]
+            else:
+                dico_graphe[t1].append(t2)
+
+            if t2 not in dico_graphe:
+                dico_graphe[t2]=[t1]
+            else:
+                dico_graphe[t2].append(t1)
+            
+            if t1 not in dico_graphe[(-1,-1)]:
+                dico_graphe[(-1,-1)].append(t1)
+            if (-2,-2) not in dico_graphe[t2]:
+                dico_graphe[t2].append((-2,-2))
+
+        return (dico_graphe,dico_capacite)
+    
+    def trajet(self,pere,sommet):
+        """Retrouver le chemin dans le graphe
+        Utilisé après dans parcours"""
+        l=[]
+        while sommet!=(-1,-1):
+            l.append(sommet)
+            sommet=pere[sommet]
+        return l
+
+    def parcours(self,dico_graphe,dico_capacite):
+        """Parcours en largeur pour la méthode des flots
+        On cherche un chemin entre (-1,-1) le sommet source et (-2,-2) le sommet puit.
+        Le parcours en largeur est classique si ce n'est qu'il faut vérifier que la capacité
+        d'une arète est non nulle"""
+        a_parcourir=[(-1,-1)]
+        pere={}
+        while len(a_parcourir)>0:
+            sommet=a_parcourir.pop(0)
+            for k in range(len(dico_graphe[sommet])):
+                if dico_graphe[sommet][k]==(-2,-2) and dico_capacite[(sommet,dico_graphe[sommet][k])]==1:
+                    return self.trajet(pere,sommet)
+                else:
+                    if dico_graphe[sommet][k] not in pere and dico_capacite[(sommet,dico_graphe[sommet][k])]==1:
+                        pere[dico_graphe[sommet][k]]=sommet
+                        a_parcourir.append(dico_graphe[sommet][k])
+        return []
+
+
+
+
+
+
+
+
+
+
+
 class SolverFulkerson(Solver):
 
     """
     Implémente un solveur basé sur l'algorithme de Ford-Fulkerson pour trouver un appariement maximal.
     Cette approche fonctionne uniquement lorsque toutes les valeurs des cellules sont égales à 1.
     """
-    def run(self):
-        """
-        Exécute l'algorithme de Ford-Fulkerson pour trouver un matching maximal dans le graphe biparti de la grille.
-        """
-        self.pairs = []
-        
-        # Construire le graphe biparti des paires valides
-        even_cells = [] #cellules paires
-        odd_cells = [] #cellules impaires
-        adj_dict = {} #dictionnaire où chaque clé représente une cellule paire, et la valeur est une liste des cellules impaires adjacentes.
-
-        for i in range(self.grid.n):
-            for j in range(self.grid.m):
-                if (i + j) % 2 == 0:
-                    even_cells.append((i, j))
-                else:
-                    odd_cells.append((i, j))
-
-        for elt2 in even_cells:
-            L=[]
-            for i in range (self.grid.n):
-                for j in range (self.grid.m):
-                    if self.grid.color[i][j]==0: #on associe les blanches à toutes les autres cases sauf les noires
-                        if i>1:
-                            if self.grid.is_forbidden(i-1,j)==False:
-                                L.append(((i-1,j)))
-                                
-                        if i<self.grid.n-1:
-                            if self.grid.is_forbidden(i+1,j)==False:
-                                L.append(((i+1,j)))
-
-                        if j>1 : 
-                            if self.grid.is_forbidden(i,j-1)==False:
-                                L.append(((i,j-1)))
-
-                        if j<self.grid.n-1:
-                            if self.grid.is_forbidden(i,j+1)==False:
-                                L.append(((i,j+1)))
-
-                    elif self.grid.color[i][j]==1: #on associe les rouges aux rouges et aux bleues
-                        if i>1:
-                            if self.grid.color[i-1][j]==1 or self.grid.color[i-1][j]==2:
-                                L.append(((i-1,j)))
-
-                        if i<self.grid.n-1:
-                            if self.grid.color[i+1][j]==1 or self.grid.color[i+1][j]==2:
-                                L.append(((i+1,j)))
-
-                        if j>1 : 
-                            if self.grid.color[i][j-1]==1 or self.grid.color[i][j-1]==2:
-                                L.append(((i,j-1)))
-
-                        if j<self.grid.n-1:
-                            if self.grid.color[i][j+1]==1 or self.grid.color[i][j+1]==2:
-                                L.append(((i,j+1)))
-
-                    elif self.grid.color[i][j]==2: #on associe les bleues aux bleues
-                        if i>1:
-                            if self.grid.color[i-1][j]==2:
-                                L.append(((i-1,j)))
-
-                        if i<self.grid.n-1:
-                            if self.grid.color[i+1][j]==2:
-                                L.append(((i+1,j)))
-
-                        if j>1 : 
-                            if self.grid.color[i][j-1]==2:
-                                L.append(((i,j-1)))
-
-                        if j<self.grid.n-1:
-                            if self.grid.color[i][j+1]==2:
-                                L.append(((i,j+1)))
-
-                    elif self.grid.color[i][j]==3: #on associe les vertes aux vertes
-                        if i>1:
-                            if self.grid.color[i-1][j]==3:
-                                L.append(((i-1,j)))
-
-                        if i<self.grid.n-1:
-                            if self.grid.color[i+1][j]==3:
-                                L.append(((i+1,j)))
-
-                        if j>1 : 
-                            if self.grid.color[i][j-1]==3:
-                                L.append(((i,j-1)))
-
-                        if j<self.grid.n-1:
-                            if self.grid.color[i][j+1]==3:
-                                L.append(((i,j+1)))
-
-            adj_dict[elt2]=L
-        
-        # Fonction récursive pour trouver un chemin augmentant
-        def find_augmenting_path(cell, visited, matching):
-            for neighbor in adj_dict[cell]:
-                if neighbor not in visited:
-                    visited.add(neighbor)
-                    if neighbor not in matching or find_augmenting_path(matching[neighbor], visited, matching):
-                        matching[neighbor] = cell
-                        matching[cell] = neighbor
-                        return True
-            return False
-        
-        # Trouver l'appariement maximal avec Ford-Fulkerson
-        matching = {}
-        for cell in adj_dict:
-            if cell not in matching:
-                find_augmenting_path(cell, set(), matching)
-
-        # Extraire les paires de l'appariement
-        self.pairs = [(cell, matching[cell]) for cell in matching if isinstance(matching[cell], tuple) and cell < matching[cell]]
-
     
-    def score(self):
-        """
-        Puisque toutes les valeurs sont égales à 1, le score final est simplement le nombre de cellules non appariées.
-        """
-        used_cells = {cell for pair in self.pairs for cell in pair}
-        total_unpaired = sum(1 for i in range(self.grid.n) for j in range(self.grid.m)
-                             if (i, j) not in used_cells and not self.grid.is_forbidden(i, j))
-        return total_unpaired
+
+    def Matrice_équipée(self):  #crée une matrice équipée d'un sommet de départ et d'arrivée
+          m=len(self.M)
+          Mat_équipée=[[0 for i in range (m+2)] for i in range (m+2)] #la matrice est plus grande pour y inclure le départ et l'arrivée
+          for i in range(m):
+               for j in range(m):
+                    Mat_équipée[i][j]=self.M[i][j]
+          for i in range (m):  #ici l'avant dernière colonne correspond au sommet de départ et la dernière à l'arrivée
+               if (self.S[i][0]+self.S[i][1])%2==0 :
+                    Mat_équipée[m][i]=1
+               else :
+                    Mat_équipée[i][m+1]=1
+          return Mat_équipée
+    
+    def Ford_Fulkerson(self):
+         Mat=self.Matrice_équipée()
+         m=len(self.M)
+         L = Graph.liste_chemins(Mat,[m],[m+1])
+         Solution=[]
+         
+         while L!=[] :    #tant qu'il existe des chemins dans mon graphe
+              print("...")
+              for k in range (len(L[0])-1):    
+                   i=L[0][k]
+                   j=L[0][k+1]
+                   Solution.append((i,j))  #j'ajoute un de ces chemins à ma solution
+                   Mat[i][j]=0 #je l'enlève de mon graphe, ce qui veut dire que je ne peux plus faire la paire ajoutée à la solution
+              # Marquer les arêtes inverses à supprimer
+              to_remove = set()
+              for elt in Solution:
+                  if (elt[1], elt[0]) in Solution:
+                      to_remove.add(elt)
+                      to_remove.add((elt[1], elt[0]))
+
+                # Supprimer les arêtes inverses
+              Solution = [elt for elt in Solution if elt not in to_remove]
+
+                # Inverser les arêtes dans le graphe résiduel
+              for i, j in to_remove:
+                  Mat[j][i] = 1
+              L = Graph.liste_chemins(Mat,[m],[m+1])
+         return Solution
+
+
+def Mat_adj_graphbiparti (self) : 
+
+    L = Grid.all_pairs()
+    M = [[0 for i in range (self.grid.n)] for i in range (self.grid.m)]
+    for elt in L : 
+        c1,c2=L[elt]
+        M[c1][c2]=1
+    
+    return M
+    
+
 

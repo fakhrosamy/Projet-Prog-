@@ -21,5 +21,5 @@ print("The final score of SolverEmpty is:", solver.score())
 Grid.plot(grid2)
 
 solver = SolverFulkerson(grid2)
-solver.run()
+solver.Ford_Fulkerson()
 print("The final score of SolverFulkerson is:", solver.score())
