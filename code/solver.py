@@ -70,23 +70,23 @@ class SolverFulkerson(Solver):
     
     def run(self):
         grid=self.grid
-        (dico_graphe,dico_capacite)=Graph.create_oriented(self)
+        (dico_graphe,dico_valeur)=Graph.create_oriented(self)
         pairs=[]
-        chemin=Graph.parcours(self, dico_graphe, dico_capacite)
+        chemin=Graph.parcours(self, dico_graphe, dico_valeur)
         while len(chemin)>0:
             print(chemin)
-            for k in range(1,len(chemin)):
-                if k%2==1:
-                    pairs.append((chemin[k],chemin[k-1]))
-                    dico_capacite[chemin[k-1],(-2,-2)]=0
-                    dico_capacite[chemin[k],chemin[k-1]]=0
-                    dico_capacite[chemin[k-1],chemin[k]]=1
+            for i in range(1,len(chemin)):
+                if i%2==1:
+                    pairs.append((chemin[i],chemin[i-1]))
+                    dico_valeur[chemin[i-1],(-2,-2)]=0
+                    dico_valeur[chemin[i],chemin[i-1]]=0
+                    dico_valeur[chemin[i-1],chemin[i]]=1
                 else:
-                    pairs.remove((chemin[k-1],chemin[k]))
-                    dico_capacite[chemin[k],chemin[k-1]]=0
-                    dico_capacite[chemin[k-1],chemin[k]]=1
-            dico_capacite[((-1,-1),chemin[-1])]=0
-            chemin = Graph.parcours(self, dico_graphe, dico_capacite)
+                    pairs.remove((chemin[i-1],chemin[i]))
+                    dico_valeur[chemin[i],chemin[i-1]]=0
+                    dico_valeur[chemin[i-1],chemin[i]]=1
+            dico_valeur[((-1,-1),chemin[-1])]=0
+            chemin = Graph.parcours(self, dico_graphe, dico_valeur)
         
         self.pairs = pairs
         return pairs
@@ -100,5 +100,88 @@ class SolverFulkerson(Solver):
                              if (i, j) not in used_cells and not self.grid.is_forbidden(i, j))
         return total_unpaired
 
+
+
+class SolverHongrois(Solver):
+    """
+    Solver qui utilise l'algorithme hongrois (que l'on n'a pas codé)
+   
+    """
+ 
+    def _init_(self, grid):
+        super()._init_(grid)
+        self.grid = grid
+
+    def score(self, pairs):
+        """Permet de calculer le score total d'une liste de paires."""
+        used_cells = []
+        score = 0
+        
+        # On somme les différences absolues des valeurs de chaque paire
+        for pair in pairs:
+            score += Grid.cost(self, pair)
+            used_cells.append(pair[0])
+            used_cells.append(pair[1])
+        
+        # On somme ensuite les valeurs des cellules non appariées sauf celles de couleur noire
+        for i in range(self.grid.n):
+            for j in range(self.grid.m):
+                if (i, j) not in used_cells and not self.grid.is_forbidden(i, j):
+                    score += self.grid.value[i][j]
+        return score
+
+    def run(self):
+        """
+        Output:
+        -------
+        tuple (pairs, score)
+          pairs: list[tuple[tuple[int]]]
+          score: int
+        """
+        # On construit ensuite la matrice de coûts 
+        pairs = self.grid.all_pairs()
+        even_cells = []
+        odd_cells = []
+        for pair in pairs:
+            cell1, cell2 = pair
+            if (cell1[0]+cell1[1])%2 == 0: # On fait un test sur la parité de la cellule
+                if not cell1 in even_cells:
+                    even_cells.append(cell1)
+                if not cell2 in odd_cells: 
+                    odd_cells.append(cell2)
+            else:
+                if not cell1 in odd_cells:
+                    odd_cells.append(cell1)
+                if not cell2 in even_cells:
+                    even_cells.append(cell2)
+
+        # On veut récupérer les indices des cellules 
+        even_cells_indices = {cell: idx for idx, cell in enumerate(even_cells)}
+        odd_cells_indices = {cell: idx for idx, cell in enumerate(odd_cells)}
+
+        matrice_cout = np.full((len(even_cells), len(odd_cells)), 0)
+        for (i1, j1) in even_cells:
+            for (i2, j2) in odd_cells:
+                if max(abs(i1-i2),abs(j1-j2)) == 1 and min(abs(i1-i2),abs(j1-j2)) == 0: # On s'assure que les cellules sont adjacentes
+                    if ((i1,j1),(i2,j2)) in pairs or ((i2,j2),(i1,j1)) in pairs: # On évite de faire le calcul deux fois pour la même paire 
+                        cost = -(self.grid.value[i1][j1] + self.grid.value[i2][j2] - abs(self.grid.value[i1][j1] - self.grid.value[i2][j2])) # On met un signe - devant pour revenir à un problème de maximisation
+                        matrice_cout[even_cells_indices[(i1, j1)], odd_cells_indices[(i2, j2)]] = cost
+        
+        # On applique à ce niveau l'algorithme hongrois qui va nous permettre d'obtenir l'affectation optimale des pairs avec la matrice coût précédente
+        resultat = algo_hongrois(matrice_cout)
+        
+        # On calcule enfin le score final
+        pairs = []
+        used_cells = []
+        for i, j in resultat:
+            if matrice_cout[i,j] != 0:
+                cell1 = even_cells[i]
+                cell2 = odd_cells[j]
+                if cell1 not in used_cells and cell2 not in used_cells:
+                    pairs.append((cell1, cell2))
+                    used_cells.append(cell1)
+                    used_cells.append(cell2)
+        self.pairs = pairs.copy()
+        return self.pairs, self.score(self.pairs)
 
 
