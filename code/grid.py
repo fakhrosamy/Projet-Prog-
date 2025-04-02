@@ -118,18 +118,22 @@ class Grid():
     
         return abs(self.value[i1][j1] - self.value[i2][j2])
 
-    def match_colors(self,i1,j1,i2,j2):
-        """Return True is the colors match and False otherwise"""
-        if self.is_forbidden(i1,j1) or self.is_forbidden(i2,j2):
-            return False
-        elif self.color[i1][j1]==0 or self.color[i2][j2]==0:
-            return True
-        elif self.color[i1][j1]<3 and self.color[i2][j2]<3:
-            return True
-        elif self.color[i1][j1]==3 and self.color[i2][j2]==3:
-            return True
-        else:
-            return False
+    def match_colors(self, i1, j1, i2, j2 ):
+        """
+        Returns True if cell1 and cell2 can be paired together.
+        """
+
+        c1, c2 = self.color[i1][j1], self.color[i2][j2]
+
+        couleur_comp = {
+            0: {1, 2, 3, 0}, # Blanc : Blanc, Rouge, Bleu, Vert et Noir
+            1: {1, 2, 0}, # Rouge : Blanc, Rouge et Bleu
+            2: {1, 2, 0}, # Bleu : Blanc, Rouge et Bleu
+            3: {3, 0}, # Vert : Blanc ou Vert
+            4: {} # Noir :
+        }
+        return c2 in couleur_comp[c1]
+
     def all_pairs(self):
         """
         Returns a list of all pairs of cells that can be taken together. 

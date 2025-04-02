@@ -14,7 +14,7 @@ file_name = data_path + "grid01.in"
 grid3 = Grid.grid_from_file(file_name, read_values=True)
 print(grid3)
 
-solver = SolverEmpty(grid3)
+solver = SolverGreedy(grid3)
 solver.run()
 print("The final score of SolverEmpty is:", solver.score())
 

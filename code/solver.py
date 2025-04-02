@@ -25,7 +25,7 @@ class Solver:
         self.pairs = list()
 
 
-class SolverEmpty(Solver):
+class SolverGreedy(Solver):
     def run(self):
         """
         Exécute l'algorithme glouton pour sélectionner les paires minimisant le coût.
@@ -74,7 +74,7 @@ class SolverFulkerson(Solver):
         pairs=[]
         chemin=Graph.parcours(self, dico_graphe, dico_valeur)
         while len(chemin)>0:
-            print(chemin)
+            # print(chemin)
             for i in range(1,len(chemin)):
                 if i%2==1:
                     pairs.append((chemin[i],chemin[i-1]))
