@@ -61,7 +61,7 @@ class Test_Grid(unittest.TestCase):
         self.assertCountEqual(grid.all_pairs(), expected_pairs)
     
 
-    def test_solver_greedy(self): # On regarde si le solver greedy renvoie le score optimal (spoiler : non)
+    def test_solver_greedy_and_fulkerson(self): # On regarde si le solver greedy renvoie le score optimal (spoiler : non)
         
         test_cases = {
             "grid11.in": 26,
