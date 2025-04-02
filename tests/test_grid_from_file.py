@@ -7,12 +7,6 @@ from grid import Grid
 from solver import *
 
 
-
-# This will work if ran from the root folder (the folder in which there is the subfolder code/)
-
-
-
-
 """mettre cd .. avant de lancer les tests dans le terminal"""
 
 class Test_Grid(unittest.TestCase):
