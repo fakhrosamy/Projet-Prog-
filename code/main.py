@@ -16,7 +16,7 @@ print(grid3)
 
 solver = SolverGreedy(grid3)
 solver.run()
-print("The final score of SolverEmpty is:", solver.score())
+print("The final score of SolverGreedy is:", solver.score())
 
 Grid.plot(grid2)
 
